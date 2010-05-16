@@ -1,0 +1,300 @@
+
+/home/vikas/submit/gt_spinlock.c,296
+extern int gt_spinlock_init(gt_spinlock_t* spinlock)gt_spinlock_init14,617
+void gt_actual_spinlock(volatile int * spinlock)gt_actual_spinlock23,774
+extern int gt_spin_lock(gt_spinlock_t* spinlock)gt_spin_lock44,1165
+extern int gt_spin_unlock(gt_spinlock_t *spinlock)gt_spin_unlock52,1301
+
+/home/vikas/submit/gt_pq.h,1708
+#define __GT_PQ_H__GT_PQ_H2,18
+#define MAX_UTHREAD_PRIORITY MAX_UTHREAD_PRIORITY4,37
+#define MAX_UTHREAD_GROUPS MAX_UTHREAD_GROUPS5,69
+#define DEFAULT_UTHREAD_PRIORITY DEFAULT_UTHREAD_PRIORITY6,99
+#define REPLENISH_PERIOD REPLENISH_PERIOD7,135
+#define TOTAL_CREDIT_IN_TIME_SLICE TOTAL_CREDIT_IN_TIME_SLICE8,163
+#define DEFAULT_UTHREAD_CREDIT DEFAULT_UTHREAD_CREDIT9,277
+#define MICRO_SEC(MICRO_SEC10,311
+typedef struct uthread_head uthread_head_t;uthread_head_t13,393
+typedef struct prio_structprio_struct15,438
+     unsigned int group_mask; /* mask(i) : groups with atleast one thread */group_mask17,467
+     unsigned int reserved[3];reserved18,544
+     uthread_head_t group[MAX_UTHREAD_GROUPS]; /* array(i) : uthreads from uthread_group 'i' */group20,576
+} prio_struct_t;prio_struct_t21,672
+typedef struct __runqueue__runqueue24,691
+     unsigned int uthread_tot; /* cnt : Tot num of uthreads in the runq (all priorities) */uthread_tot38,1437
+     uthread_head_t tq_head;tq_head39,1529
+} runqueue_t;runqueue_t40,1558
+typedef struct __kthread_runqueue__kthread_runqueue61,2446
+     runqueue_t *active_runq;active_runq63,2482
+     runqueue_t *expires_runq;expires_runq64,2512
+     gt_spinlock_t kthread_runqlock;kthread_runqlock65,2543
+     uthread_struct_t *cur_uthread;	/* current running uthread (not in active/expires) */cur_uthread67,2581
+     unsigned int reserved0;reserved068,2671
+     uthread_head_t zombie_uthreads;zombie_uthreads69,2700
+     runqueue_t runqueues[2];runqueues71,2738
+     unsigned int total_uthread_weight;  /*weight of all uthreads in this queue*/  total_uthread_weight72,2768
+} kthread_runqueue_t;kthread_runqueue_t73,2852
+
+/home/vikas/submit/gt_uthread.h,1949
+#define __GT_UTHREAD_H__GT_UTHREAD_H2,23
+typedef unsigned int uthread_t;uthread_t6,119
+typedef unsigned int uthread_group_t;uthread_group_t7,151
+#define UTHREAD_INIT UTHREAD_INIT10,211
+#define UTHREAD_RUNNABLE UTHREAD_RUNNABLE11,237
+#define UTHREAD_RUNNING UTHREAD_RUNNING12,267
+#define UTHREAD_CANCELLED UTHREAD_CANCELLED13,296
+#define UTHREAD_DONE UTHREAD_DONE14,327
+typedef struct uthread_structuthread_struct17,410
+     int uthread_state; /* UTHREAD_INIT, UTHREAD_RUNNABLE, UTHREAD_RUNNING, UTHREAD_CANCELLED, UTHREAD_DONE */uthread_state20,444
+     int uthread_priority; /* uthread running priority */uthread_priority21,555
+     int cpu_id; /* cpu it is currently executing on */cpu_id22,613
+     int last_cpu_id; /* last cpu it was executing on */last_cpu_id23,669
+     unsigned int uthread_weight; /*assigned by user*/uthread_weight24,726
+     int uthread_credit; /*assigned and managed by credit scheduler*/uthread_credit25,781
+     struct timeval uthread_scheduled_time; /*time at which uthread is scheduled by credit scheduler*/uthread_scheduled_time26,851
+     int uthread_schedule_count; /*count the number of times uthread is scheduled by credit scheduler*/uthread_schedule_count27,954
+     uthread_t uthread_tid; /* thread id */uthread_tid29,1060
+     uthread_group_t uthread_gid; /* thread group id  */uthread_gid30,1104
+     int (*uthread_func)(void*);uthread_func31,1161
+     void *uthread_arg;uthread_arg32,1194
+     void *exit_status; /* exit status */exit_status34,1219
+     int reserved1;reserved135,1261
+     int reserved2;reserved236,1281
+     int reserved3;reserved337,1301
+     sigjmp_buf uthread_env; /* 156 bytes : save user-level thread context*/uthread_env39,1323
+     stack_t uthread_stack; /* 12 bytes : user-level thread stack */uthread_stack40,1400
+     TAILQ_ENTRY(uthread_struct) uthread_runq;uthread_runq41,1469
+} uthread_struct_t;uthread_struct_t42,1516
+
+/home/vikas/submit/gt_signal.c,336
+extern void kthread_install_sighandler(int signo, void (*handler)(int))kthread_install_sighandler20,383
+extern void kthread_block_signal(int signo)kthread_block_signal38,727
+extern void kthread_unblock_signal(int signo)kthread_unblock_signal50,908
+extern void kthread_init_vtalrm_timeslice()kthread_init_vtalrm_timeslice62,1095
+
+/home/vikas/submit/gt_kthread.c,1398
+#define KTHREAD_DEFAULT_SSIZE KTHREAD_DEFAULT_SSIZE15,259
+kthread_context_t *kthread_cpu_map[GT_MAX_KTHREADS];kthread_cpu_map23,579
+ksched_shared_info_t ksched_shared_info;ksched_shared_info26,668
+void ksched_load_balance()ksched_load_balance51,1663
+int kthread_create(kthread_t *tid, void (*kthread_start_func)(void *), void *arg)kthread_create192,5996
+static void kthread_handler(void *arg)kthread_handler243,7269
+#define k_ctx k_ctx249,7389
+#undef k_ctxk_ctx258,7731
+static void kthread_init(kthread_context_t *k_ctx)kthread_init263,7776
+static inline void kthread_exit()kthread_exit295,8674
+static inline void ksched_info_init(ksched_shared_info_t *ksched_info)ksched_info_init303,8862
+static inline void KTHREAD_PRINT_SCHED_DEBUGINFO(kthread_context_t *k_ctx, char *str)KTHREAD_PRINT_SCHED_DEBUGINFO311,9115
+extern kthread_runqueue_t *ksched_find_target(uthread_struct_t *u_obj)ksched_find_target323,9433
+static void ksched_cosched(int signal)ksched_cosched354,10484
+static void ksched_replenish()ksched_replenish404,11963
+static void ksched_announce_cosched_group()ksched_announce_cosched_group460,14515
+static void ksched_priority(int signo)ksched_priority466,14627
+static void gtthread_app_start(void *arg)gtthread_app_start526,16629
+extern void gtthread_app_init()gtthread_app_init557,17376
+extern void gtthread_app_exit()gtthread_app_exit628,19483
+
+/home/vikas/submit/gt_tailq.h,795
+#define __GT_TAILQ_H__GT_TAILQ_H34,1658
+#define	TAILQ_HEAD(TAILQ_HEAD39,1715
+#define	TAILQ_HEAD_INITIALIZER(TAILQ_HEAD_INITIALIZER45,1888
+#define	TAILQ_ENTRY(TAILQ_ENTRY48,1961
+#define	TAILQ_EMPTY(TAILQ_EMPTY57,2160
+#define	TAILQ_FIRST(TAILQ_FIRST59,2215
+#define	TAILQ_FOREACH(TAILQ_FOREACH61,2262
+#define	TAILQ_FOREACH_REVERSE(TAILQ_FOREACH_REVERSE66,2408
+#define	TAILQ_INIT(TAILQ_INIT71,2587
+#define	TAILQ_INSERT_AFTER(TAILQ_INSERT_AFTER76,2718
+#define	TAILQ_INSERT_BEFORE(TAILQ_INSERT_BEFORE86,3122
+#define	TAILQ_INSERT_HEAD(TAILQ_INSERT_HEAD93,3393
+#define	TAILQ_INSERT_TAIL(TAILQ_INSERT_TAIL103,3759
+#define	TAILQ_LAST(TAILQ_LAST110,3996
+#define	TAILQ_NEXT(TAILQ_NEXT113,4094
+#define	TAILQ_PREV(TAILQ_PREV115,4150
+#define	TAILQ_REMOVE(TAILQ_REMOVE118,4258
+
+/home/vikas/submit/gt_signal.h,151
+#define __GT_SIGNAL_H__GT_SIGNAL_H2,22
+#define KTHREAD_VTALRM_SEC KTHREAD_VTALRM_SEC10,314
+#define KTHREAD_VTALRM_USEC KTHREAD_VTALRM_USEC11,343
+
+/home/vikas/submit/gt_kthread.h,2905
+#define __GT_KTHREAD_H__GT_KTHREAD_H2,23
+#define GT_MAX_CORES	GT_MAX_CORES4,47
+#define GT_MAX_KTHREADS GT_MAX_KTHREADS5,71
+typedef unsigned int kthread_t;kthread_t7,109
+#define KTHREAD_DONE KTHREAD_DONE13,258
+typedef struct __kthread_context__kthread_context15,344
+     unsigned int cpuid;cpuid17,379
+     unsigned int cpu_apic_id;cpu_apic_id18,404
+     unsigned int pid;pid19,435
+     unsigned int tid;tid20,458
+     FILE* log;log21,481
+     unsigned int counter; /* for replenshing*/counter23,498
+     unsigned int kthread_flags;kthread_flags24,546
+     void (*kthread_app_func)(void *); /* kthread application function */kthread_app_func25,579
+     void (*kthread_sched_timer)(int); /* vtalrm signal handler */kthread_sched_timer26,653
+     void (*kthread_sched_relay)(int); /* relay(usr1) signal handler*/kthread_sched_relay27,720
+     void (*kthread_runqueue_balance)(); /* balance across kthread runqueues */kthread_runqueue_balance29,792
+     sigjmp_buf kthread_env; /* kthread's env to jump to (when done scheduling) */kthread_env30,872
+     kthread_runqueue_t krunqueue;krunqueue32,956
+} kthread_context_t;kthread_context_t33,991
+typedef struct __ksched_shared_info__ksched_shared_info50,1677
+     unsigned int uthread_select_criterion; /* (S) : currently just a uthread_group_id */uthread_select_criterion52,1715
+     unsigned int uthread_group_penalty; /* (M) : penalty for co-scheduling a lower priority uthread */uthread_group_penalty53,1805
+     unsigned int kthread_tot_uthreads; /* (M) : Set if atleast one uthread was created */kthread_tot_uthreads54,1909
+     unsigned int kthread_cur_uthreads; /* (M) : Current uthreads (over all kthreads) */kthread_cur_uthreads55,2000
+     unsigned short last_ugroup_kthread[MAX_UTHREAD_GROUPS]; /* (M) : Target cpu for next uthread from group */last_ugroup_kthread57,2090
+     unsigned short last_cpu; /* Target cpu for next uthread*/last_cpu59,2205
+     gt_spinlock_t ksched_lock; /* global lock for updating above counters */ksched_lock60,2268
+     gt_spinlock_t uthread_init_lock; /* global lock for uthread_init (to serialize signal handling stuff in there) */uthread_init_lock61,2346
+     gt_spinlock_t ksched_load_balance_lock; /*global lock to serialize load balancing of run queues*/ksched_load_balance_lock63,2466
+     gt_spinlock_t __malloc_lock; /* making malloc thread-safe (check particular glibc to see if needed) */__malloc_lock65,2570
+     unsigned int reserved[2];reserved66,2678
+} ksched_shared_info_t;ksched_shared_info_t67,2709
+static inline unsigned char kthread_apic_id(void)kthread_apic_id78,3106
+#define INITIAL_APIC_ID_BITS INITIAL_APIC_ID_BITS83,3343
+#undef INITIAL_APIC_ID_BITSINITIAL_APIC_ID_BITS95,3597
+static inline void *MALLOC_SAFE(unsigned int size)MALLOC_SAFE101,3727
+static inline void *MALLOCZ_SAFE(unsigned int size)MALLOCZ_SAFE111,3995
+
+/home/vikas/submit/gt_uthread.c,556
+#define KTHREAD_CUR_ID	KTHREAD_CUR_ID23,565
+#define UTHREAD_DEFAULT_SSIZE UTHREAD_DEFAULT_SSIZE32,875
+static int uthread_init(uthread_struct_t *u_new)uthread_init45,1391
+extern void uthread_schedule(uthread_struct_t * (*kthread_best_sched_uthread)(kthread_runqueue_t *))kthread_best_sched_uthread113,3320
+static void uthread_context_func(int signo)uthread_context_func263,8601
+extern int uthread_create(uthread_t *u_tid, int (*u_func)(void *), void *u_arg, unsigned int u_weight)uthread_create298,9797
+extern void gt_yield()gt_yield364,12115
+
+/home/vikas/submit/matrix/pt_matrix.c,1453
+#define ROWS ROWS7,84
+#define COLS COLS8,102
+#define SIZE SIZE9,120
+#define NUM_CPUS NUM_CPUS11,139
+#define NUM_GROUPS NUM_GROUPS12,158
+#define PER_GROUP_COLS PER_GROUP_COLS13,186
+#define NUM_THREADS NUM_THREADS15,228
+#define PER_THREAD_ROWS PER_THREAD_ROWS16,252
+typedef struct matrixmatrix24,519
+	int m[SIZE][SIZE];m26,543
+	int rows;rows28,564
+	int cols;cols29,575
+	unsigned int reserved[2];reserved30,586
+} matrix_t;matrix_t31,613
+typedef struct __pthread_arg__pthread_arg34,627
+	matrix_t *_A, *_B, *_C;_A36,658
+	matrix_t *_A, *_B, *_C;_B36,658
+	matrix_t *_A, *_B, *_C;_C36,658
+	unsigned int reserved0;reserved037,683
+	unsigned int tid;tid39,709
+	unsigned int gid;gid40,728
+	int start_row; /* start_row -> (start_row + PER_THREAD_ROWS) */start_row41,747
+	int start_col; /* start_col -> (start_col + PER_GROUP_COLS) */start_col42,812
+}pthread_arg_t;pthread_arg_t44,878
+struct timeval tv1;tv146,896
+static void generate_matrix(matrix_t *mat, int val)generate_matrix48,917
+static void print_matrix(matrix_t *mat)print_matrix62,1129
+static void * pthread_mulmat(void *p)pthread_mulmat76,1293
+#define ptr ptr84,1440
+#undef ptrptr120,2524
+matrix_t A, B, C;A124,2549
+matrix_t A, B, C;B124,2549
+matrix_t A, B, C;C124,2549
+static void init_matrices()init_matrices126,2568
+pthread_arg_t pargs[NUM_THREADS];pargs136,2687
+pthread_t ptids[NUM_THREADS];ptids137,2721
+int main()main139,2752
+
+/home/vikas/submit/matrix/gt_matrix.c,2154
+#define true true15,262
+#define false false16,277
+#define ROWS ROWS17,293
+#define COLS COLS18,310
+#define SIZE SIZE19,328
+#define NUM_CPUS NUM_CPUS21,347
+#define NUM_GROUPS NUM_GROUPS22,366
+#define PER_GROUP_COLS PER_GROUP_COLS23,394
+#define NUM_THREADS NUM_THREADS24,435
+#define PER_THREAD_ROWS PER_THREAD_ROWS26,460
+#define GT_THREADS GT_THREADS28,504
+FILE *Log;Log30,526
+     int m[64][64];m39,778
+     int rows;rows41,799
+     int cols;cols42,814
+     unsigned int reserved[2];reserved43,829
+} matrix_64;matrix_6444,860
+     int m[128][128];m48,891
+     int rows;rows50,914
+     int cols;cols51,929
+     unsigned int reserved[2];reserved52,944
+} matrix_128;matrix_12853,975
+     int m[256][256];m57,1008
+     int rows;rows59,1031
+     int cols;cols60,1046
+     unsigned int reserved[2];reserved61,1061
+} matrix_256;matrix_25662,1092
+     int m[512][512];m66,1124
+     int rows;rows68,1147
+     int cols;cols69,1162
+     unsigned int reserved[2];reserved70,1177
+} matrix_512;matrix_51271,1208
+typedef struct __uthread_arg__uthread_arg74,1224
+     void *_A, *_B, *_C;_A76,1255
+     void *_A, *_B, *_C;_B76,1255
+     void *_A, *_B, *_C;_C76,1255
+     unsigned int reserved0;reserved077,1280
+     unsigned int tid;tid79,1310
+     unsigned int gid;gid80,1333
+     unsigned int weight;weight81,1356
+     unsigned int size;size82,1382
+     int start_row; /* start_row -> (start_row + PER_THREAD_ROWS) */start_row83,1406
+     int start_col; /* start_col -> (start_col + PER_GROUP_COLS) */start_col84,1475
+}uthread_arg_t;uthread_arg_t86,1545
+static void generate_matrix(void *mat, int val, int size)generate_matrix90,1586
+static void * uthread_mulmat(void *p)uthread_mulmat161,2963
+#define ptr ptr179,3429
+#undef ptrptr274,6390
+matrix_64 m_64[128 * 3];m_64278,6419
+matrix_128 m_128[128 * 3];m_128279,6444
+matrix_256 m_256[128 * 3];m_256280,6471
+matrix_512 m_512[128 * 3];m_512281,6498
+static void init_matrices()init_matrices283,6526
+uthread_arg_t uargs[NUM_THREADS];uargs317,7278
+uthread_t utids[NUM_THREADS];utids318,7312
+int main()main321,7344
+
+/home/vikas/submit/gt_pq.c,976
+static inline void __add_to_runqueue(runqueue_t *runq, uthread_struct_t *u_elem)__add_to_runqueue24,603
+inline void __rem_from_runqueue(runqueue_t *runq, uthread_struct_t *u_elem)__rem_from_runqueue59,1561
+extern void init_runqueue(runqueue_t *runq)init_runqueue99,2547
+extern void add_to_runqueue(runqueue_t *runq, gt_spinlock_t *runq_lock, uthread_struct_t *u_elem)add_to_runqueue118,2936
+extern void rem_from_runqueue(runqueue_t *runq, gt_spinlock_t *runq_lock, uthread_struct_t *u_elem)rem_from_runqueue127,3163
+extern void switch_runqueue(runqueue_t *from_runq, gt_spinlock_t *from_runqlock, switch_runqueue136,3394
+extern void kthread_init_runqueue(kthread_runqueue_t *kthread_runq)kthread_init_runqueue147,3746
+extern uthread_struct_t *sched_find_best_uthread(kthread_runqueue_t *kthread_runq)sched_find_best_uthread182,5103
+extern uthread_struct_t *sched_find_best_uthread_group(kthread_runqueue_t *kthread_runq)sched_find_best_uthread_group258,7099
+
+/home/vikas/submit/gt_spinlock.h,199
+#define __GT_SPINLOCK_H__GT_SPINLOCK_H2,24
+typedef struct __gt_spinlock__gt_spinlock4,49
+	volatile int locked;locked6,80
+	unsigned int holder;holder7,102
+} gt_spinlock_t;gt_spinlock_t8,124
+
+/home/vikas/submit/gt_bitops.h,191
+#define __GT_BITOPS_H__GT_BITOPS_H2,22
+#define SET_BIT(SET_BIT6,88
+#define RESET_BIT(RESET_BIT15,265
+#define IS_BIT_SET(IS_BIT_SET25,478
+#define LOWEST_BIT_SET(LOWEST_BIT_SET28,585
+
+/home/vikas/submit/gt_include.h,290
+#define __GT_INCLUDE_H__GT_INCLUDE_H2,23
+#define DEBUG DEBUG6,66
+#define PRN(PRN9,93
+#define PRN(PRN11,211
+#define OPEN_KTHREAD_LOG_FILE(OPEN_KTHREAD_LOG_FILE15,343
+#define OPEN_KTHREAD_LOG_FILE(OPEN_KTHREAD_LOG_FILE31,1035
+#define KLOG(KLOG35,1089
+#define KLOG(KLOG43,1526
