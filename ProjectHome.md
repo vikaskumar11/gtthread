@@ -1,0 +1,2 @@
+User-thread create API takes ‘weight’ as input parameter.  Credit scheduler assigns credits to user-threads.  Credits are assigned to user-thread as a function of its own‘weight’,  ‘total weight’ due to all user-thread in the run-queue associated with the kernel-thread on which this user-thread is run and total credits (based on cpu) available for the duration of time before credit replenishment takes place.
+User-thread-credit  =  (weight / total-weight)  
